@@ -1,20 +1,49 @@
-# Parelax
-## A vision-based methodology for WebXR parelax
+# pARallax
 
-This experiment tracks the user's facial position relative to the screen, and offsets the screen accordingly.
-Numberous methodologies and scaling values are available for experimentation, such as moving the camera vs. moving and rotating it, different smoothing functions for the scale, etc
+## A vision-based methodology for WebXR parallax
 
-The project has been set up to use webpack for bundling assets and code. To get started, install the project's dependencies by running the following command:
+This experiment tracks the viewer's face position relative to the screen,
+using [MindAR](https://github.com/hiukim/mind-ar-js)'s face tracking, and
+offsets a depth-mapped image accordingly — so a flat photograph behaves like
+a window into the scene instead of a static picture.
+
+The engine (`src/ParallaxEngine.js`) is plain Three.js: give it one or more
+`{ map, depthMap, alphaMap?, depth? }` image descriptors and a container
+element, and it handles camera permission, face tracking, depth-displaced
+plane geometry, and cross-fading between images on a timer. The demo in
+`src/App.jsx` generates a synthetic color/depth pair on a `<canvas>` at
+runtime (`src/demoImage.js`) so it runs with zero bundled assets — swap that
+out for your own photo + depth map pair to see it with real photography:
+
+```js
+new ParallaxEngine({
+  container: containerRef.current,
+  images: [
+    { map: "/my-photo.jpg", depthMap: "/my-photo-depth.jpg", depth: 0.5 },
+  ],
+});
+```
+
+Depth maps can come from any monocular depth-estimation tool (Depth Anything,
+MiDaS, Photoshop's Depth Blur, etc.) — export them grayscale, white = near,
+black = far.
+
+## Getting started
+
+Install dependencies:
+
 ```
 npm install
 ```
 
-During development, you can use the following command to run a `webpack server` for testing on your computer or a device on your local network:
+Run a local dev server (HTTPS is required for camera access):
+
 ```
-npm run start
+npm start
 ```
 
-And when you're ready to publish your site, run the following command. The resulting `dist` folder can be uploaded to ZapWorks for publishing. If you'd like to self-host your site, be sure to check out the documentation on the [Zappar for React Three Fiber](https://www.npmjs.com/package/@zappar/zappar-react-three-fiber) page.
+Build for production:
+
 ```
 npm run build
 ```
