@@ -1,8 +1,55 @@
-html, body, #root {
+html,
+body,
+#root {
   width: 100%;
   height: 100%;
   margin: 0;
   padding: 0;
+  background: #0e1116;
+  color: #ece7dd;
+  font-family: system-ui, sans-serif;
+  overflow: hidden;
+}
+
+#container video {
+  visibility: hidden;
+}
+
+#landing {
+  position: fixed;
+  inset: 0;
+  z-index: 10;
   display: flex;
   flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 16px;
+  text-align: center;
+  padding: 0 24px;
+  background: rgba(14, 17, 22, 0.55);
+}
+
+#landing h1 {
+  margin: 0;
+  font-size: 2.4rem;
+}
+
+#landing p {
+  max-width: 46ch;
+  color: rgba(236, 231, 221, 0.75);
+}
+
+#landing button {
+  font-size: 1rem;
+  padding: 10px 22px;
+  border-radius: 999px;
+  border: 1px solid rgba(236, 231, 221, 0.4);
+  background: transparent;
+  color: inherit;
+  cursor: pointer;
+}
+
+#landing button:hover {
+  border-color: #d69b52;
+  color: #d69b52;
 }
