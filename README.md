@@ -1,49 +1,110 @@
-# pARallax
+# pARelax
 
-## A vision-based methodology for WebXR parallax
+## A framework for WebXR parallax
 
-This experiment tracks the viewer's face position relative to the screen,
-using [MindAR](https://github.com/hiukim/mind-ar-js)'s face tracking, and
-offsets a depth-mapped image accordingly — so a flat photograph behaves like
-a window into the scene instead of a static picture.
+pARelax turns flat photographs into volumetric "windows" — the viewer's face
+position drives a depth-displaced Three.js scene, so the image shifts in
+parallax as they move, as if the screen were a pane of glass looking into the
+scene rather than a surface a picture is printed on.
 
-The engine (`src/ParallaxEngine.js`) is plain Three.js: give it one or more
-`{ map, depthMap, alphaMap?, depth? }` image descriptors and a container
-element, and it handles camera permission, face tracking, depth-displaced
-plane geometry, and cross-fading between images on a timer. The demo in
-`src/App.jsx` generates a synthetic color/depth pair on a `<canvas>` at
-runtime (`src/demoImage.js`) so it runs with zero bundled assets — swap that
-out for your own photo + depth map pair to see it with real photography:
+---
+
+## How it works
+
+There are three stages to producing a pARelax experience:
+
+### 1 — Depth estimation with MiDaS
+
+Each photograph needs a companion **depth map** — a grayscale image where
+white means near and black means far. These are generated offline using
+[MiDaS](https://github.com/isl-org/MiDaS), a monocular depth-estimation model
+from Intel ISL, run via PyTorch:
+
+```bash
+# example using the MiDaS repo directly
+python run.py \
+  --model_type dpt_beit_large_512 \
+  --input_path photos/ \
+  --output_path depth_maps/
+```
+
+The output is a 16-bit or 8-bit grayscale PNG. Export or convert it to 8-bit
+JPG/PNG and pair it with the original photo. Any monocular depth tool works
+(Depth Anything, Photoshop Depth Blur, etc.) as long as the output convention
+is white = near, black = far.
+
+### 2 — Face tracking with MindAR
+
+At runtime, [MindAR](https://github.com/hiukim/mind-ar-js) handles camera
+permission and face tracking entirely in the browser — no native plugin, no
+app install. It exposes a 4×4 face matrix every frame that encodes the
+viewer's head position and orientation relative to the camera.
+
+pARelax reads that matrix and maps the face's XY translation onto the render
+camera's position, smoothed with an inertia factor so small jitter disappears
+while deliberate head movement drives clear parallax.
+
+### 3 — Depth-displaced rendering with Three.js (via R3F)
+
+The photo is rendered on a subdivided `PlaneGeometry` (180×90 segments) whose
+vertices are displaced along Z using the depth map as a `displacementMap` on a
+`MeshPhongMaterial`. Moving the camera over a displaced plane produces genuine
+3-D parallax — closer regions shift more than distant ones.
+
+[React Three Fiber](https://github.com/pmndrs/react-three-fiber) (R3F) wires
+the Three.js scene into the React component tree and owns the render loop,
+with the MindAR camera feed composited underneath.
+
+```
+┌──────────────────────────────┐
+│  Browser (HTTPS required)    │
+│  ┌────────────────────────┐  │
+│  │  React / R3F           │  │
+│  │  ┌──────────────────┐  │  │
+│  │  │  Three.js scene  │  │  │
+│  │  │  PlaneGeometry   │  │  │
+│  │  │  displacementMap │  │  │  ← depth map drives vertex Z
+│  │  └──────────────────┘  │  │
+│  └───────────▲────────────┘  │
+│              │ face matrix   │
+│  ┌───────────┴────────────┐  │
+│  │  MindAR face tracker   │  │  ← live camera feed
+│  └────────────────────────┘  │
+└──────────────────────────────┘
+```
+
+---
+
+## Usage
+
+The engine is in `src/ParallaxEngine.js`. Give it a container element and one
+or more `{ map, depthMap, alphaMap?, depth? }` image descriptors:
 
 ```js
 new ParallaxEngine({
   container: containerRef.current,
   images: [
-    { map: "/my-photo.jpg", depthMap: "/my-photo-depth.jpg", depth: 0.5 },
+    { map: "/photo.jpg", depthMap: "/photo-depth.jpg", depth: 0.5 },
+    { map: "/photo2.jpg", depthMap: "/photo2-depth.jpg" },
   ],
+  rotateIntervalMs: 10000, // cross-fade interval (default 10 s)
 });
 ```
 
-Depth maps can come from any monocular depth-estimation tool (Depth Anything,
-MiDaS, Photoshop's Depth Blur, etc.) — export them grayscale, white = near,
-black = far.
+`depth` controls the maximum vertex displacement (default `0.5`). Stronger
+values read better from farther away; dial back if foreground subjects look
+extruded.
+
+The demo (`src/App.jsx`) generates a synthetic color/depth pair at runtime via
+`src/demoImage.js` — no bundled assets required. Swap it for a real photo +
+depth map pair to see it with actual photography.
+
+---
 
 ## Getting started
 
-Install dependencies:
-
 ```
 npm install
-```
-
-Run a local dev server (HTTPS is required for camera access):
-
-```
-npm start
-```
-
-Build for production:
-
-```
+npm start      # HTTPS is required for camera access
 npm run build
 ```
