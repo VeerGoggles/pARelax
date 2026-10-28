@@ -2,6 +2,13 @@
 
 ## A framework for WebXR parallax
 
+<a href="https://veergoggles.github.io/lenticulAR/demos/"><img align="right" width="120" alt="QR code for the live demos" src="preview-qr-code.png"></a>
+
+**▶ Live demo: [pARelax and lenticulAR, side by side](https://veergoggles.github.io/lenticulAR/demos/)**
+— or [pARelax full screen](https://veergoggles.github.io/pARelax/).
+Runs in the browser: allow the camera and move your head. Scan the code to
+open it on a phone.
+
 pARelax turns flat photographs into volumetric "windows" — the viewer's face
 position drives a depth-displaced Three.js scene, so the image shifts in
 parallax as they move, as if the screen were a pane of glass looking into the
@@ -108,3 +115,16 @@ npm install
 npm start      # HTTPS is required for camera access
 npm run build
 ```
+
+`.github/workflows/pages.yml` builds every push and pull request and publishes
+`main` to GitHub Pages at <https://veergoggles.github.io/pARelax/> (with
+*Settings → Pages → Source* set to *GitHub Actions*).
+
+---
+
+## See also
+
+[lenticulAR](https://github.com/VeerGoggles/lenticulAR) builds on the same
+technique: three depth-mapped scenes behind the screen, with a row of rotating
+prisms flipping between them as the viewer moves — a lenticular print, faked.
+Both run side by side on the [live demo page](https://veergoggles.github.io/lenticulAR/demos/).
