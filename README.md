@@ -113,12 +113,13 @@ depth map pair to see it with actual photography.
 ```
 npm install
 npm start      # HTTPS is required for camera access
+npm test       # the camera follows the tracked head
 npm run build
 ```
 
-`.github/workflows/pages.yml` builds every push and pull request and publishes
-`main` to GitHub Pages at <https://veergoggles.github.io/pARelax/> (with
-*Settings → Pages → Source* set to *GitHub Actions*).
+`.github/workflows/pages.yml` tests and builds every push and pull request
+and publishes `main` to GitHub Pages at <https://veergoggles.github.io/pARelax/>
+(with *Settings → Pages → Source* set to *GitHub Actions*).
 
 ---
 

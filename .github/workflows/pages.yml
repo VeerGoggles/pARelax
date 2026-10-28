@@ -1,4 +1,4 @@
-name: Build and publish the demo
+name: Test, build and publish the demo
 
 on:
   push:
@@ -29,6 +29,9 @@ jobs:
       # mind-ar pulls in the native `canvas` package for its Node-side tools;
       # nothing in the browser build needs it, so skip its install script
       - run: npm ci --ignore-scripts
+      - run: npm test -- --watchAll=false
+        env:
+          CI: true
       - run: npm run build
         env:
           CI: true

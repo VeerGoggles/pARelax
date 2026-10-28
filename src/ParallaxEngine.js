@@ -39,7 +39,10 @@ class ParallaxEngine {
     const light = new THREE.HemisphereLight(0x000000, 0xffffff, 0.5);
     this.scene.add(light);
 
-    this.faceMatrix = new THREE.Matrix4();
+    // Until a face is found, assume one straight in front of the camera at a
+    // typical viewing distance (cm), so the first frames show the scene
+    // framed as it will be when tracking locks on.
+    this.faceMatrix = new THREE.Matrix4().makeTranslation(0, 0, -50);
     this.targetCameraPos = new THREE.Vector3();
 
     this.CAMERA_OFFSET = new THREE.Vector3(0, 0.4, 0);
@@ -50,7 +53,10 @@ class ParallaxEngine {
   animate() {
     const faceMatrix = this.mindarThree.controller?.lastEstimateResult?.faceMatrix;
     if (faceMatrix?.length >= 16) {
-      this.faceMatrix.fromArray(faceMatrix);
+      // MindAR builds faceMatrix row-major (MindARThree applies it with
+      // Matrix4.set). fromArray() reads column-major, which leaves the
+      // translation at (0, 0, 0) and the camera never follows the head.
+      this.faceMatrix.set(...faceMatrix);
     }
 
     // map the tracked face position onto the render camera, smoothed with inertia
